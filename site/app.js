@@ -8,6 +8,10 @@
    it sits at a different depth, so try each in turn. */
 const DATA_PATHS = ['../data/results.json', 'data/results.json', './results.json'];
 
+/* theta advances one full circle per synodic month, so 360/29.5305889/24
+   degrees per hour. Used to price Delta-T uncertainty in degrees of phase. */
+const DEG_PER_HOUR = 360 / 29.5305889 / 24;
+
 const COL = {
   ink: '#dfe6ef', dim: '#97a4b6', faint: '#64738a',
   line: '#1f2a38', moon: '#e9e4d6', accent: '#7fb8ff',
@@ -114,7 +118,11 @@ function renderTable() {
   const tb = $('#series-table tbody');
   tb.innerHTML = rows.map(r => {
     const isBest = r.Y === best.Y;
-    return '<tr>' +
+    const dtDeg = Math.abs(r.delta_t_h) * DEG_PER_HOUR;
+    // more clock uncertainty than the miss it is being quoted to
+    const swamped = dtDeg > r.E;
+    const stale = Math.abs(r.delta_t_h) > 24;
+    return '<tr' + (stale ? ' class="stale"' : '') + '>' +
       '<td class="num' + (isBest ? ' best' : '') + '">' + r.Y + '</td>' +
       '<td class="moon-cell">' + r.date + '</td>' +
       '<td class="num">' + int(r.D) + '</td>' +
@@ -124,6 +132,8 @@ function renderTable() {
       '<td class="num dim">' + (r.slip >= 0 ? '+' : '') + r.slip.toFixed(4) + '</td>' +
       '<td class="num' + (isBest ? ' best' : '') + '">' + degAdaptive(r.E) + '</td>' +
       '<td class="num dim">' + pct(r.illum) + '</td>' +
+      '<td class="num ' + (swamped ? 'swamped' : 'dim') + '">' +
+        r.delta_t_h.toFixed(1) + ' · ' + dtDeg.toFixed(2) + '°</td>' +
       '<td class="num dim">' + r.dr_Y + '·' + r.dr_D + '·' + r.dr_Z + '·' + r.dr_K + '</td>' +
     '</tr>';
   }).join('');
@@ -406,6 +416,18 @@ function renderStatic() {
 
   const maxDt = ROWS.reduce((x, r) => Math.max(x, Math.abs(r.delta_t_h)), 0);
   fill('max-dt', maxDt.toFixed(1));
+
+  /* Where does the record stop improving, and what is the best thing after
+     it?  Both are read from the data so the prose cannot go stale. */
+  const rec = s.running_minimum[s.running_minimum.length - 1];
+  const after = ROWS.filter(r => r.Y > rec.Y).reduce(
+    (m, r) => (m === null || r.E < m.E ? r : m), null);
+  fill('record-Y', 'Y = ' + rec.Y + ' (' + rec.date + ')');
+  fill('record-remaining', int(m.ymax - rec.Y));
+  fill('record-runnerup', after
+    ? degAdaptive(after.E) + ' at Y = ' + after.Y +
+      ', ' + (after.E / rec.E).toFixed(1) + '× worse'
+    : 'n/a');
 
   const bad = ROWS.find(r => r.Y === 1031);
   fill('bad-1031', bad ? deg(bad.theta, 2) : 'n/a');

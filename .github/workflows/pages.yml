@@ -1,12 +1,11 @@
 name: Deploy site to GitHub Pages
 
+# Manual dispatch only. GitHub Pages is not enabled on this repository --
+# the site is deployed to Vercel -- and configure-pages fails hard when it is
+# off, which would paint every push red for no reason. Enable Pages at
+# Settings -> Pages -> Source -> GitHub Actions, then run this from the
+# Actions tab.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'site/**'
-      - 'data/**'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:

@@ -274,3 +274,21 @@ footer p { font-size: 13.5px; color: var(--ink-faint); margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* Delta-T honesty markers ------------------------------------------- */
+
+.tablenote {
+  font-size: 14px; color: var(--ink-faint); max-width: 78ch;
+  margin: 14px 0 0; padding-left: 14px; border-left: 2px solid var(--warn);
+}
+.tablenote b { color: var(--warn); }
+.tablenote em { color: var(--ink-dim); font-style: normal; text-decoration: underline;
+                text-decoration-color: var(--accent-dim); text-underline-offset: 3px; }
+.stale-key {
+  background: rgba(242,128,124,0.10); border-bottom: 1px solid rgba(242,128,124,0.45);
+  padding: 1px 6px; border-radius: 3px; color: var(--bad);
+}
+tbody tr.stale td { background: rgba(242,128,124,0.055); }
+tbody tr.stale:hover td { background: rgba(242,128,124,0.10); }
+tbody tr.stale td:first-child::after { content: " ⚠"; color: var(--bad); font-size: 11px; }
+td.swamped { color: var(--warn); }

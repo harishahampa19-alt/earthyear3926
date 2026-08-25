@@ -120,6 +120,7 @@
           <th data-key="slip" class="num">slip <span class="u">d</span></th>
           <th data-key="E" class="num">E <span class="u">deg</span></th>
           <th data-key="illum" class="num">lit</th>
+          <th data-key="delta_t_h" class="num" title="Delta-T model value, and the lunar phase it is worth">ΔT <span class="u">h · deg</span></th>
           <th data-key="dr_Y" class="num" title="digital roots of Y, D, Z, K">dr Y·D·Z·K</th>
         </tr>
       </thead>
@@ -127,6 +128,17 @@
     </table>
     <p class="empty" id="empty-note" hidden>No year in the scan meets that tolerance.</p>
   </div>
+
+  <p class="tablenote">
+    <b>Read the ΔT column against E.</b> θ moves 0.508° per hour, so a ΔT of
+    <i>h</i> hours is worth 0.508<i>h</i> degrees of phase — the second figure
+    in that column. Wherever it exceeds E, the miss is smaller than the
+    uncertainty in what time it is, and the row is a statement about a defined
+    time scale rather than a prediction. Past roughly Y = 1200 that is
+    <em>every</em> row. Rows shaded <span class="stale-key">like this</span>
+    carry more than 24 hours of ΔT, where the figure stops meaning anything at
+    all.
+  </p>
 </section>
 
 <!-- ================================================================ 3 -->
@@ -135,8 +147,17 @@
   <p class="sub">
     E(Y) for all <b data-fill="survivors-inline"></b> C1 survivors, log scale.
     The stepped line is the running minimum: the best alignment found at or
-    before each Y. It keeps falling, which is what <span class="nw">inf |error| = 0</span>
-    looks like from inside a finite scan.
+    before each Y.
+  </p>
+  <p class="sub">
+    It descends steeply and then <b>stops</b>. The last record is set at
+    <b data-fill="record-Y"></b>, and the remaining
+    <b data-fill="record-remaining"></b> years of the scan never beat it —
+    the closest they come is <b data-fill="record-runnerup"></b>. That is not
+    a contradiction of <span class="nw">inf |error| = 0</span>: records in an
+    equidistributed sequence improve logarithmically, so each new one takes
+    exponentially longer to arrive. The infimum is still zero. Getting there
+    is just slow, and irregular, and no finite scan will show it.
   </p>
   <div class="chartbox"><canvas id="chart-e"></canvas></div>
 </section>
