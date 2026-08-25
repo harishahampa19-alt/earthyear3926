@@ -187,8 +187,15 @@ def cmd_scan(args: argparse.Namespace) -> int:
     }
     payload["meta"]["runtime_s"] = round(time.time() - t_start, 1)
 
+    # Compact separators, and ASCII-escaped so the file is byte-identical
+    # whatever the platform default encoding is.  The site downloads this on
+    # every visit, so the ~30% saved over an indented dump is worth the
+    # slightly worse readability; results.csv is the human-facing copy.
     json_path = out_dir / "results.json"
-    json_path.write_text(json.dumps(payload, indent=1), encoding="utf-8")
+    json_path.write_text(
+        json.dumps(payload, separators=(",", ":"), ensure_ascii=True),
+        encoding="utf-8",
+    )
 
     import pandas as pd
 
