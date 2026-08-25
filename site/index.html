@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OEYC — One Earth Year Completion</title>
+<meta name="description" content="When do the Gregorian calendar, the seven-day week and the lunar phase all return at once? They never do. This is the map of how close they get.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='42' fill='%23e8e4d9'/></svg>">
+</head>
+<body>
+
+<a class="skip" href="#series">Skip to the results</a>
+
+<!-- ================================================================ 1 -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">One Earth Year Completion</p>
+    <h1>The calendar, the week and the Moon<br>never realign.</h1>
+    <p class="lede">
+      Start from <time datetime="2026-06-30">30 June 2026, 00:00 UT</time> — a Tuesday,
+      at a full moon. Go forward a whole number of calendar years. When does the
+      terminal date land on a Tuesday <em>and</em> at a full moon again?
+    </p>
+
+    <section class="theorem" aria-labelledby="thm">
+      <h2 id="thm">Theorem — the solution set is empty</h2>
+      <div class="thm-body">
+        <p>
+          C1 forces <b>D = 7Z</b>. C3 taken exactly forces <b>D = K·M</b>.
+          Writing M as the rational <b>295305889 / 10<sup>7</sup></b> makes
+          <b>7·Z·10<sup>7</sup> = K·295305889</b> an integer equation. The
+          numerator is odd, is not a multiple of 5, and leaves remainder 4
+          modulo 7 — so it is coprime to both 7 and 10<sup>7</sup>. Therefore
+          <b>7·10<sup>7</sup> divides K</b>.
+        </p>
+        <p class="thm-punch">
+          The first exact solution needs <b data-fill="exact-k"></b> lunations —
+          about <b data-fill="exact-years"></b> tropical years. Nothing below
+          that works, and that one is an artifact of writing M to seven
+          decimals. For the real synodic month, which is irrational and
+          drifting, the set is empty outright.
+        </p>
+        <p class="thm-punch alt">
+          And yet <b>inf |error| = 0</b>. Each 400-year block advances the phase
+          by 146097 days, which is not a whole number of lunations, so the
+          near-solutions keep improving without bound. <b>This project maps
+          them.</b>
+        </p>
+      </div>
+    </section>
+
+    <ul class="conditions">
+      <li>
+        <span class="cid">C1</span>
+        <span class="cmath">Z(Y) = D(Y) / 7 ∈ ℤ</span>
+        <span class="cnote">Same weekday at both ends. An exact integer test — no ephemeris needed.</span>
+      </li>
+      <li>
+        <span class="cid">C2</span>
+        <span class="cmath">D(Y) = 365Y + L(Y)</span>
+        <span class="cnote">Whole calendar years, Gregorian leap rule. Non-selective; the residual against Y·365.2421897 is recorded, never used to filter.</span>
+      </li>
+      <li>
+        <span class="cid">C3</span>
+        <span class="cmath">slip = D − K·M ≈ 0</span>
+        <span class="cnote">Whole lunations, with K = round(D / 29.5305889).</span>
+      </li>
+      <li>
+        <span class="cid">C4</span>
+        <span class="cmath">E(Y) = min<sub>h</sub> |θ − 180°| &lt; ε</span>
+        <span class="cnote">Actual alignment at the terminal date, from DE441 over the 24 UT hours of that day.</span>
+      </li>
+    </ul>
+
+    <dl class="topline">
+      <div><dt>years scanned</dt><dd data-fill="scanned"></dd></div>
+      <div><dt>pass C1</dt><dd data-fill="survivors"></dd></div>
+      <div><dt>exact solutions</dt><dd class="zero" data-fill="exact-found"></dd></div>
+      <div><dt>best near-miss</dt><dd data-fill="best-e"></dd></div>
+    </dl>
+  </div>
+</header>
+
+<main>
+
+<!-- ================================================================ 2 -->
+<section id="series" class="wrap block">
+  <h2>The series S(ε)</h2>
+  <p class="sub">
+    Every year that passes C1, ranked by how near the terminal date comes to a
+    true full moon. Move ε to widen or tighten the net; filtering happens in
+    your browser against the committed scan.
+  </p>
+
+  <div class="controls">
+    <div class="ctl">
+      <label for="eps">ε — alignment tolerance</label>
+      <input type="range" id="eps" min="-2" max="0.699" step="0.001" value="-1">
+      <output id="eps-out">0.100°</output>
+    </div>
+    <div class="ctl-stats">
+      <span><b id="n-members">—</b> members</span>
+      <span><b id="pct-members">—</b> of C1 survivors</span>
+      <span>first <b id="first-member">—</b></span>
+      <span>last <b id="last-member">—</b></span>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table id="series-table">
+      <thead>
+        <tr>
+          <th data-key="Y" class="num">Y</th>
+          <th data-key="date">terminal date</th>
+          <th data-key="D" class="num">D</th>
+          <th data-key="L" class="num">L(Y)</th>
+          <th data-key="Z" class="num">Z</th>
+          <th data-key="K" class="num">K</th>
+          <th data-key="slip" class="num">slip <span class="u">d</span></th>
+          <th data-key="E" class="num">E <span class="u">deg</span></th>
+          <th data-key="illum" class="num">lit</th>
+          <th data-key="dr_Y" class="num" title="digital roots of Y, D, Z, K">dr Y·D·Z·K</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="empty" id="empty-note" hidden>No year in the scan meets that tolerance.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 3 -->
+<section class="wrap block">
+  <h2>Chart A — the error floor descends</h2>
+  <p class="sub">
+    E(Y) for all <b data-fill="survivors-inline"></b> C1 survivors, log scale.
+    The stepped line is the running minimum: the best alignment found at or
+    before each Y. It keeps falling, which is what <span class="nw">inf |error| = 0</span>
+    looks like from inside a finite scan.
+  </p>
+  <div class="chartbox"><canvas id="chart-e"></canvas></div>
+</section>
+
+<!-- ================================================================ 4 -->
+<section class="wrap block">
+  <h2>Chart B — gaps between hits</h2>
+  <p class="sub">
+    Distance in years from each member of S(ε) to the next. The gaps respond to
+    the ε slider above.
+  </p>
+  <div class="chartbox short"><canvas id="chart-gaps"></canvas></div>
+  <p class="sub" id="gap-note"></p>
+</section>
+
+<!-- ================================================================ 5 -->
+<section class="wrap block" id="reference">
+  <h2>The founding hypothesis, and why it failed</h2>
+  <p class="sub">
+    This project began with a pair of dates: 30 June 1987 and 30 June 2026.
+    Both Tuesdays, exactly 39 calendar years and 2035 whole weeks apart. The
+    expectation was that the Moon would come back too.
+  </p>
+
+  <div class="refgrid">
+    <figure class="refcard fail">
+      <figcaption>
+        <span class="reftag">30 June 1987 · Tuesday</span>
+        <span class="refverdict">phase not returned</span>
+      </figcaption>
+      <div class="diagrams" data-moon="1987"></div>
+      <dl class="refstats">
+        <div><dt>θ</dt><dd data-fill="ref-1987-theta"></dd></div>
+        <div><dt>illuminated</dt><dd data-fill="ref-1987-illum"></dd></div>
+      </dl>
+    </figure>
+
+    <figure class="refcard pass">
+      <figcaption>
+        <span class="reftag">30 June 2026 · Tuesday</span>
+        <span class="refverdict">full moon</span>
+      </figcaption>
+      <div class="diagrams" data-moon="2026"></div>
+      <dl class="refstats">
+        <div><dt>θ</dt><dd data-fill="ref-2026-theta"></dd></div>
+        <div><dt>illuminated</dt><dd data-fill="ref-2026-illum"></dd></div>
+      </dl>
+    </figure>
+  </div>
+
+  <div class="cause">
+    <h3>The cause</h3>
+    <p>
+      <b>39 = 19 + 19 + 1.</b> The Metonic cycle of 19 years is
+      <b data-fill="metonic-19"></b> lunations — very nearly whole, which is
+      why 38 years preserves lunar phase to
+      <b data-fill="metonic-38-err"></b> of a lunation. The extra single year
+      adds <b data-fill="metonic-extra"></b> lunations. That leftover
+      <b data-fill="metonic-frac"></b> of a cycle is
+      <b data-fill="ref-slip"></b> days of slip, and it is the whole story:
+      the calendar and the week closed, the Moon did not.
+    </p>
+    <p class="honest">
+      The negative result is part of the finding. C1 and C2 are cheap to
+      satisfy — <b data-fill="survivors-inline2"></b> years in the scan do it.
+      Satisfying C3 and C4 as well is what is impossible, and the 1987 pair is
+      the cleanest demonstration of the gap between the two.
+    </p>
+  </div>
+</section>
+
+<!-- ================================================================ 6 -->
+<section class="wrap block" id="conjectures">
+  <h2>Conjectures</h2>
+  <p class="sub">Each with its current computational status, at the default ε = 0.1°.</p>
+
+  <article class="conj" id="conj-add">
+    <header><h3>(a) Additivity</h3><span class="status" data-fill="add-status"></span></header>
+    <p>If Y<sub>a</sub> and Y<sub>b</sub> both lie in S, does Y<sub>a</sub> + Y<sub>b</sub>?</p>
+    <div class="conj-nums" data-fill="add-nums"></div>
+    <p class="detail" data-fill="add-detail"></p>
+    <div class="subcase">
+      <h4>The 179 + 437 = 616 case</h4>
+      <p>
+        The founding write-up records this triple as exact in years, weeks
+        (9340 + 22802 = 32142) and lunations (2214 + 5405 = 7619). Checked
+        against both leap rules:
+      </p>
+      <div class="tablewrap tight"><table id="triple-table">
+        <thead><tr>
+          <th class="num">Y</th>
+          <th class="num">D Gregorian</th><th class="num">weeks</th><th>C1</th>
+          <th class="num">D Julian</th><th class="num">weeks</th><th>C1</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <p class="detail" data-fill="triple-detail"></p>
+    </div>
+  </article>
+
+  <article class="conj" id="conj-cf">
+    <header><h3>(b) Continued fractions</h3><span class="status" data-fill="cf-status"></span></header>
+    <p>
+      C1 and C3 together demand Z/K = M/7 = <b data-fill="cf-ratio"></b>. The
+      best rational approximations to that ratio are its continued-fraction
+      convergents, so each convergent p/q proposes Z = p, K = q, hence
+      D = 7p and a predicted Y ≈ D / 365.2421897.
+    </p>
+    <div class="tablewrap tight"><table id="cf-table">
+      <thead><tr>
+        <th class="num">p / q</th><th class="num">D predicted</th>
+        <th class="num">Y predicted</th><th class="num">nearest member</th>
+        <th class="num">distance</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="detail" data-fill="cf-detail"></p>
+  </article>
+
+  <article class="conj" id="conj-gap">
+    <header><h3>(c) Gap periodicity</h3><span class="status" data-fill="gap-status"></span></header>
+    <p>Is the sequence of gaps between consecutive members eventually periodic?</p>
+    <div class="conj-nums" data-fill="gap-nums"></div>
+    <p class="detail" data-fill="gap-detail"></p>
+  </article>
+
+  <article class="conj proved" id="conj-period">
+    <header><h3>Established — C1 is exactly 400-periodic</h3><span class="status ok">proved and verified</span></header>
+    <p>
+      D(Y+400) − D(Y) = 146097 = 7 × 20871 for every Y, so adding 400 years
+      never changes D mod 7 and C1 membership repeats with period 400.
+    </p>
+    <div class="conj-nums" data-fill="period-nums"></div>
+  </article>
+</section>
+
+<!-- ================================================================ 7 -->
+<section class="wrap block" id="methods">
+  <h2>Methods, and what these numbers do not mean</h2>
+
+  <div class="mgrid">
+    <div class="mcard">
+      <h3>Ephemeris</h3>
+      <p>
+        <b data-fill="kernel"></b>, JPL DE441. Segments used here are valid
+        <b data-fill="kernel-span"></b>. Positions are geocentric
+        <em>apparent</em> ecliptic longitudes in the true ecliptic and equinox
+        of date, light-time corrected, via Skyfield
+        <b data-fill="skyfield-ver"></b>.
+      </p>
+      <p>
+        θ is verified identical to <code>skyfield.almanac.moon_phase</code> to
+        within 10<sup>−9</sup> degrees by the test suite.
+      </p>
+    </div>
+
+    <div class="mcard">
+      <h3>Why not mean elements</h3>
+      <p>
+        A mean-element lunar theory drifts by degrees within a thousand years
+        of the epoch and by tens of degrees within five thousand. The effects
+        measured here are sub-degree, so an approximation of that class would
+        be larger than the entire signal. Nothing on this page uses one.
+      </p>
+      <p>
+        T_trop and M_syn appear only as bookkeeping: K, slip and the tropical
+        residual. Never as a source of position.
+      </p>
+    </div>
+
+    <div class="mcard warn">
+      <h3>The hourly grid</h3>
+      <p>
+        E is a minimum over the 24 whole UT hours of the terminal date, as
+        defined. θ moves about 0.508° per hour, so the grid alone contributes
+        up to <b>±0.254°</b>. An E below roughly a quarter of a degree
+        therefore says the full moon fell close to a whole hour, not only that
+        it fell on that day.
+      </p>
+      <p>
+        <b>slip</b> is the sampling-free companion measure: it is continuous,
+        and its smallest absolute value in the scan is
+        <b data-fill="min-slip"></b> days.
+      </p>
+    </div>
+
+    <div class="mcard warn">
+      <h3>ΔT in the far future</h3>
+      <p>
+        Converting UT to dynamical time needs ΔT, which is extrapolated beyond
+        the observed record. At the far end of this scan the model value is
+        about <b data-fill="max-dt"></b> hours, with an uncertainty plausibly
+        of the same order.
+      </p>
+      <p>
+        Since θ moves 0.508° per hour, <b>E values past roughly the year 2500
+        are reproducible but not predictive.</b> They are exact statements
+        about a defined time scale, not forecasts of what a future observer
+        would see.
+      </p>
+    </div>
+
+    <div class="mcard">
+      <h3>Column accuracy</h3>
+      <ul class="acc">
+        <li><b>Y, D, L, Z, K</b> — exact integers.</li>
+        <li><b>slip</b> — exact to double precision, from the defining constant.</li>
+        <li><b>E, θ</b> — ephemeris-limited to well under 0.001°, then grid-limited as above.</li>
+        <li><b>lit</b> — true phase angle, not the (1 − cos θ)/2 proxy.</li>
+        <li><b>digital roots</b> — exact integers; presented as curiosities, with no claim attached.</li>
+      </ul>
+    </div>
+
+    <div class="mcard warn">
+      <h3>Two published values that fail</h3>
+      <p>
+        The founding write-up lists Y = 1031 at ≈179.98° and Y = 4374 at
+        ≈180.000°. Neither reproduces.
+      </p>
+      <ul class="acc">
+        <li><b>Y = 1031</b> passes C1, but θ measures <b data-fill="bad-1031"></b> — about 105° from full.</li>
+        <li><b>Y = 4374</b> fails C1 outright: D = 1597571, which is 3 mod 7, so the ends are different weekdays.</li>
+      </ul>
+      <p>Both are kept as regression tests rather than removed.</p>
+    </div>
+  </div>
+
+  <p class="provenance">
+    Generated <b data-fill="generated"></b> by
+    <code>python -m oeyc.cli scan --ymax <span data-fill="ymax-inline"></span> --eps 0.1</code>
+    · Python <b data-fill="python-ver"></b> · scan runtime <b data-fill="runtime"></b>
+  </p>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <p>
+    <a href="https://github.com/harishahampa19-alt/oeyc">Source and data on GitHub</a>
+    · MIT licensed · every number on this page is produced by the committed code
+    from the committed <code>data/results.json</code>.
+  </p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
