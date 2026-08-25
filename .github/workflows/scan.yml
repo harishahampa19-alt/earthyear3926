@@ -1,0 +1,113 @@
+name: Refresh scan data
+
+# The scan needs JPL DE441, which is a 1.6 GB download. It is cached
+# between runs, so only the first run pays for it. This is deliberately
+# not part of CI: the committed data/ is what the site serves.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ymax:
+        description: 'Highest year offset to scan'
+        required: true
+        default: '5000'
+      eps:
+        description: 'Default epsilon in degrees'
+        required: true
+        default: '0.1'
+      commit:
+        description: 'Commit refreshed data back to main'
+        type: boolean
+        required: true
+        default: true
+  schedule:
+    # first of the month, 04:17 UTC
+    - cron: '17 4 1 * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+env:
+  KERNEL: de441_part-2.bsp
+  KERNEL_URL: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de441_part-2.bsp
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Restore the ephemeris kernel
+        id: kernel-cache
+        uses: actions/cache@v4
+        with:
+          path: kernels/${{ env.KERNEL }}
+          key: kernel-${{ env.KERNEL }}-v1
+
+      - name: Download the ephemeris kernel
+        if: steps.kernel-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p kernels
+          # NAIF resets long connections; resume until the file is whole.
+          for attempt in $(seq 1 20); do
+            curl -sS -L --fail --retry 8 --retry-delay 5 --retry-all-errors \
+                 --speed-time 60 --speed-limit 10240 \
+                 -C - -o "kernels/$KERNEL" "$KERNEL_URL" && break
+            echo "attempt $attempt interrupted, resuming"
+          done
+          ls -l "kernels/$KERNEL"
+
+      - name: Scan
+        run: |
+          python -m oeyc.cli scan \
+            --ymax "${{ github.event.inputs.ymax || '5000' }}" \
+            --eps "${{ github.event.inputs.eps || '0.1' }}" \
+            --out data/
+
+      - name: Verify the reference instance
+        run: python -m oeyc.cli verify
+
+      - name: Full test suite, kernel present
+        run: pytest -q -rs
+
+      - name: Re-derive the committed data
+        run: python scripts/check_data.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: |
+            data/results.json
+            data/results.csv
+
+      - name: Commit refreshed data
+        if: github.event_name == 'schedule' || github.event.inputs.commit == 'true'
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          # generated_utc changes on every run; only commit if a real
+          # number moved.
+          if git diff --quiet -- data/results.csv; then
+            echo "no change in results.csv, leaving data/ alone"
+            git checkout -- data/ || true
+            exit 0
+          fi
+          git add data/results.json data/results.csv
+          git commit -m "Refresh scan data (ymax=${{ github.event.inputs.ymax || '5000' }})"
+          git push

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pytest (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run the test suite
+        # The DE441 kernel is 1.6 GB and is never committed, so the tests
+        # marked `ephemeris` skip here by design. Everything that can be
+        # decided by exact integer arithmetic -- the calendar, the
+        # impossibility theorem, the 400-year periodicity -- runs in full.
+        run: pytest -q -rs
+
+      - name: The theorem needs no ephemeris
+        run: python -m oeyc.cli theorem
+
+      - name: Committed data matches the committed code
+        # Re-derive every integer column of data/results.json from scratch
+        # and diff it against what is in the repository. Catches a stale
+        # data file or a change in the calendar arithmetic.
+        run: python scripts/check_data.py
