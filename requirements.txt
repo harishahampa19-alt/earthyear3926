@@ -1,0 +1,7 @@
+skyfield>=1.49
+numpy>=1.26
+pandas>=2.0
+pytest>=8.0
+# install the oeyc package itself, so `python -m oeyc.cli` works from a
+# clean checkout without a second command
+-e .

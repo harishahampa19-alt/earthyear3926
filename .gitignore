@@ -1,0 +1,16 @@
+# ephemeris kernels are large binary downloads, never committed
+kernels/
+*.bsp
+*.bpc
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store

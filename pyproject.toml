@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oeyc"
+version = "1.0.0"
+description = "One Earth Year Completion recurrences: calendar, week and lunar phase"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "harishahampa19-alt" }]
+keywords = ["astronomy", "calendar", "ephemeris", "skyfield", "metonic"]
+dependencies = ["skyfield>=1.49", "numpy>=1.26", "pandas>=2.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+oeyc = "oeyc.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/harishahampa19-alt/oeyc"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["ephemeris: requires the DE441 kernel on disk"]
