@@ -17,3 +17,10 @@ venv/
 
 # local dev convenience, machine-specific paths
 .claude/
+
+# assembled site build (Pages and Vercel produce this)
+_site/
+.vercel/
+
+# stray clone of the GitHub repo, not part of this tree
+earthyear3926/

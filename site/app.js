@@ -438,16 +438,31 @@ function wire() {
 
 /* ------------------------------------------------------------------ boot */
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* results.json is a couple of hundred kilobytes, and a connection that
+   drops mid-body yields a 200 whose json() still rejects. Retry each
+   candidate a few times with a short backoff before giving up, so one bad
+   read does not blank the page. */
 async function load() {
+  const tried = [];
   let lastErr = null;
   for (const url of DATA_PATHS) {
-    try {
-      const r = await fetch(url, { cache: 'no-cache' });
-      if (r.ok) return await r.json();
-      lastErr = new Error(url + ' -> HTTP ' + r.status);
-    } catch (e) { lastErr = e; }
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const r = await fetch(url, { cache: 'no-cache' });
+        if (!r.ok) { lastErr = new Error(url + ' -> HTTP ' + r.status); break; }
+        return await r.json();
+      } catch (e) {
+        lastErr = e;
+        tried.push(url + ' #' + attempt + ': ' + e.message);
+        if (attempt < 3) await sleep(250 * attempt);
+      }
+    }
   }
-  throw lastErr || new Error('results.json not found');
+  const err = lastErr || new Error('results.json not found');
+  err.tried = tried;
+  throw err;
 }
 
 load().then(d => {

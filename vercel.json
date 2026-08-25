@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo 'no dependencies to install'",
+  "buildCommand": "mkdir -p _site && cp -r site/. _site/ && mkdir -p _site/data && cp data/results.json data/results.csv _site/data/ && test -f _site/index.html && test -f _site/data/results.json",
+  "outputDirectory": "_site",
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=300, must-revalidate" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(css|js)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+      ]
+    }
+  ]
+}

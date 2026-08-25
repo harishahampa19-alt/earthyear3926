@@ -1,10 +1,10 @@
 # OEYC — One Earth Year Completion
 
-[![CI](https://github.com/harishahampa19-alt/oeyc/actions/workflows/ci.yml/badge.svg)](https://github.com/harishahampa19-alt/oeyc/actions/workflows/ci.yml)
-[![Pages](https://github.com/harishahampa19-alt/oeyc/actions/workflows/pages.yml/badge.svg)](https://github.com/harishahampa19-alt/oeyc/actions/workflows/pages.yml)
+[![CI](https://github.com/harishahampa19-alt/earthyear3926/actions/workflows/ci.yml/badge.svg)](https://github.com/harishahampa19-alt/earthyear3926/actions/workflows/ci.yml)
+[![Pages](https://github.com/harishahampa19-alt/earthyear3926/actions/workflows/pages.yml/badge.svg)](https://github.com/harishahampa19-alt/earthyear3926/actions/workflows/pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**[→ Explore the interactive map of near-solutions](https://harishahampa19-alt.github.io/oeyc/)**
+**[→ Explore the interactive map of near-solutions](https://harishahampa19-alt.github.io/earthyear3926/)**
 
 Start from **30 June 2026, 00:00 UT** — a Tuesday, at a full moon
 (θ = 180.03°). Go forward a whole number of calendar years. When does the
@@ -115,11 +115,41 @@ pytest -q                    # ephemeris tests skip cleanly without the kernel
 python scripts/check_data.py # re-derive every integer column of results.json
 ```
 
-To view the site locally, serve the repository root and open `/site/`:
+To view the site locally:
 
 ```bash
-python -m http.server 8765
+python scripts/serve.py . 8765
 ```
+
+then open <http://127.0.0.1:8765/site/>. Use `scripts/serve.py` rather than
+`python -m http.server`: the latter speaks HTTP/1.0 and closes the socket after
+every response, which some browsers mishandle on a payload the size of
+`results.json`.
+
+---
+
+## Deployment
+
+The site is static and self-contained. Both targets assemble the same document
+root: `site/` at the top with `data/` copied in beside it. `app.js` probes
+`../data/results.json` then `data/results.json`, so the identical source works
+from a plain checkout and from an assembled build.
+
+**GitHub Pages** — `.github/workflows/pages.yml` deploys on every push that
+touches `site/` or `data/`. Enable it once at *Settings → Pages → Source →
+GitHub Actions*.
+
+**Vercel** — `vercel.json` carries the build. Import the repository and accept
+the defaults; no framework preset, no install step, output directory `_site`.
+To preview the assembled build exactly as Vercel serves it:
+
+```bash
+mkdir -p _site && cp -r site/. _site/ && mkdir -p _site/data && cp data/results.json data/results.csv _site/data/
+python scripts/serve.py _site 8766
+```
+
+Neither target needs the ephemeris kernel or any Python at deploy time — the
+scan is committed, so the site is pure static assets.
 
 ---
 
